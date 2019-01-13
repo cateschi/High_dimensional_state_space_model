@@ -1,5 +1,5 @@
 # This R-script is party based on "An Introduction to State Space Models" by Marc Wildi.
-# The function "KF_slopes" performs the estimation of the LFS model, with the multivariate auxiliary series of Google Trends. It requires the following arguments:
+# The function "KF_slopes_mixed_factor" performs the estimation of the LFS model, with the multivariate auxiliary series of Google Trends. It requires the following arguments:
 # par: initial values for the model's parameters (9x1 vector).
 # y: (5+n)xT matrix of the unemployed labour force and the n Google trends (the first 5 series are the unemployed labour force) (T=167).
 # opti: if TRUE, optimizes the function.
@@ -10,12 +10,11 @@
 # nstates: number of state variables in the model.
 # lambda: nx1 vector of estimated, by PCA, factor's loading: ONLY 1 FACTOR IS ESTIMATED FOR THE GOOGLE TRENDS.
 # H: the nxn estimated covariance matrix, by PCA, of the stationary idiosyncratic components of the Google Trends.
+# ns.id: 
 
 # The lines that are not commented here, are commented on KalmanFilter/LFS_model.R.  
 
-
-
-KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates,lambda,H){
+  KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates,lambda,H,ns.id){
     len <- length(y[1,])
     sigma_Ry <- par[1]
     sigma_omegay <- par[2]
@@ -31,7 +30,7 @@ KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates
     xttm1 <- matrix(0,nstates,(len+1))
     xttm1[,1] <- x10
     R <- diag(1,nstates,nstates)
-    D <- adiag(0, exp(sigma_Ry), exp(sigma_omegay)*diag(11), exp(sigma_lambda)*diag(4), sd_nu, diag(0,8,8), exp(sigma_Rx))
+    D <- adiag(0, exp(sigma_Ry), exp(sigma_omegay)*diag(11), exp(sigma_lambda)*diag(4), sd_nu, diag(0,8,8), exp(sigma_Rx), diag(sqrt(diag(H)[ns.id])))
     gamma <- par[9]      # correlation between the LFS solpe's and the Google Trends' factor's innovations.
     R[31,2] <- tanh(gamma)
     R[2,31] <- tanh(gamma)
@@ -44,13 +43,15 @@ KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates
       C[,,l] <- matrix(c(cos((pi*l)/6),  sin((pi*l)/6), -sin((pi*l)/6), cos((pi*l)/6)),2,2,byrow=TRUE)
     }
     Tyomega <- adiag(C[,,1],C[,,2],C[,,3],C[,,4],C[,,5],-1)
+    ncol(Tyomega)
+    nrow(Tyomega)
     Tylambda <- diag(4)
     TyE <- rbind(matrix(0,9,5), cbind(diag(4), c(0,0,0,0)))
     delta <- delta
     TyE <- cbind(TyE, rbind(c(0,0,0,0),diag(delta,nrow=4,ncol=4),matrix(0,8,4)))
     TyE <- cbind(TyE, rbind(matrix(0,5,4),diag(4),matrix(0,4,4)))
     Ty <- adiag(Tymu, Tyomega, Tylambda, TyE)
-    Tx <- as.matrix(1)      # transition matrix of the Google Trends' factor.
+    Tx <- diag(1,ncol=(length(ns.id)+1), nrow=(length(ns.id)+1))      # transition matrix of the Google Trends' factor.
     Tmatrix <- adiag(Ty, Tx)
     
     # Initialization of loglikelihood:
@@ -66,16 +67,23 @@ KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates
       Zy <- rbind(Zy,Zy,Zy,Zy,Zy)
       Zy <- cbind(Zy,rbind(c(0,0,0,0),diag(4)))
       Zy <- cbind(Zy, diag(as.numeric(k[i,]), nrow=5, ncol=5), matrix(0, nrow=5, ncol=8))
-      Zx <- as.matrix(lambda,length(lambda),1)
-      Z <- adiag(Zy,Zx)
+      one.ns.id <- rep(0, nrow(H))
+      one.ns.id[ns.id] <- 1      # one if element of vector corresponds to nonstationary idiosyncratic component.
+      Zx <- cbind(as.matrix(lambda,length(lambda),1),diag(one.ns.id))
+      Zx <- Zx[,which(!apply(Zx,2,FUN = function(x){all(x == 0)}))]
+      Z <- cbind(adiag(Zy,as.matrix(Zx)))
+      ncol(Z)
+      nrow(Z)
       
       epshatoutofsample <- y[,i] - Z%*%xttm1[,i]
-      Fmatrix <- Z%*%Pttm1[[i]]%*%t(Z) + adiag(diag(0,ncol(waves),ncol(waves)),diag(diag(H),nrow(y)-ncol(waves),nrow(y)-ncol(waves)))
+      diag.H <- diag(H)
+      diag.H[ns.id] <- 0      # only variances of stationary idiosyncratic components.
+      Fmatrix <- Z%*%Pttm1[[i]]%*%t(Z) + adiag(diag(0,ncol(waves),ncol(waves)),diag(diag.H,nrow(y)-ncol(waves),nrow(y)-ncol(waves)))
       if ((NaN %in% Fmatrix)==T){
         logl<- -P10[1]
       } else {
         svdFmatrix <- svd(Fmatrix)
-        Kg <- Pttm1[[i]]%*%t(Z)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u)
+        Kg <- Pttm1[[i]]%*%t(Z)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u) 
         if (is.na(epshatoutofsample[1,])){
           Kg[,c(1:ncol(waves))] <- matrix(0,nstates,ncol(waves))
         }
@@ -92,18 +100,18 @@ KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates
         
         # The optimization criterion:
         if (outofsample) {
-          if (i <= (nstates-13) ){
+          if (i <= (30-13) ){
             logl <- logl - nrow(y)/2*log(2*pi)
-          } else if (i > (nstates-13) ){ 
+          } else if (i > (30-13) ){ 
             logl <- logl - nrow(y)/2*log(2*pi) - 1/2*log(det(Fmatrix)) - 1/2*t(epshatoutofsample)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u)%*%epshatoutofsample
             if ((NaN %in% logl)==T){
               logl<- -P10[1]
             }
           }
         } else {
-          if (i <= (nstates-13) ){
+          if (i <= (30-13) ){
             logl <- logl - nrow(y)/2*log(2*pi)
-          } else if (i > (nstates-13) ){ 
+          } else if (i > (30-13) ){ 
             logl <- logl - nrow(y)/2*log(2*pi) - 1/2*log(det(Fmatrix)) - 1/2*t(epshatinsample)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u)%*%epshatinsample
             if ((NaN %in% logl)==T){
               logl<- -P10[1]
