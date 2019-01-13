@@ -32,7 +32,7 @@ KF_slopes <- function(par,y,k,delta,opti,outofsample,parP10,nstates){
     xttm1[,1] <- x10
     R <- diag(1,nstates,nstates)
     D <- adiag(0, exp(sigma_Ry), exp(sigma_omegay)*diag(11), exp(sigma_lambda)*diag(4), sd_nu, diag(0,8,8), 0, exp(sigma_Rx), exp(sigma_omegax)*diag(11))
-    R[32,2] <- tanh(par[11])
+    R[32,2] <- tanh(par[11])      # correlation between the LFS and the claimant counts' solpes' innovations.
     R[2,32] <- tanh(par[11])
     Q <- D%*%R%*%D
     H <- adiag(diag(0,5,5), exp(2*par[12]))      # covariance matrix of the innovations in the measurement equations.
