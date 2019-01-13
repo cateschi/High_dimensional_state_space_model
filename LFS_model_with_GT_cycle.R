@@ -10,7 +10,8 @@
 # nstates: number of state variables in the model.
 # lambda: nx1 vector of estimated, by PCA, factor's loading: ONLY 1 FACTOR IS ESTIMATED FOR THE GOOGLE TRENDS.
 # H: the nxn estimated covariance matrix, by PCA, of the idiosyncratic components of the Google Trends.
-# sARIMA: 
+# ns.id: vector of length equal to the number of nonstationary idiosyncratic components. It should contain the ordered numbers corresponing to the nonstationary idiosyncratic components.
+# sARIMA: vector with the estimated coefficients of an ARIMA(3,1,1) model for the Google Trends' factor.
 
 # The lines that are not commented here, are commented on KalmanFilter/LFS_model.R and KalmanFilter/LFS_model_with_GT.R. 
 
@@ -38,7 +39,7 @@ KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates
     R[2,32] <- tanh(gamma)
     Q <- D%*%R%*%D
     
-    #Build T:
+    # Build T (the transition matrix):
     Tymu <- matrix(c(1,1,0,1),2,2, byrow=T)
     C <- array(0,dim=c(2,2,5))
     for (l in 1:5){
