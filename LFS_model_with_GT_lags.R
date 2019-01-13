@@ -64,7 +64,7 @@ KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates
     delta <- delta
     TyE <- cbind(TyE, rbind(c(0,0,0,0),diag(delta,nrow=4,ncol=4),matrix(0,8,4)))
     TyE <- cbind(TyE, rbind(matrix(0,5,4),diag(4),matrix(0,4,4)))
-    Tx <- cbind(rbind(c(1,rep(0,length(psis)-1)),diag(1,nrow=(length(psis)),ncol=(length(psis)))),rep(0,length(psis)+1))
+    Tx <- cbind(rbind(c(1,rep(0,length(psis)-1)),diag(1,nrow=(length(psis)),ncol=(length(psis)))),rep(0,length(psis)+1))      # transition matrix of the Google Trends' factor and the nonstationary idiosyncratic components.
     Tmatrix <- rbind(Tymu, cbind(matrix(0,nrow=nstates-2-length(ns.id),ncol=2),adiag(Tyomega, Tylambda, TyE,Tx)))
     Tmatrix <- adiag(Tmatrix, diag(1,ncol=(length(ns.id)), nrow=(length(ns.id))))
     
@@ -86,8 +86,6 @@ KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates
       Zx <- diag(one.ns.id)
       Zx <- Zx[,which(!apply(Zx,2,FUN = function(x){all(x == 0)}))]
       Zx <- cbind(as.matrix(lambda),matrix(0,nrow=length(lambda),ncol=length(psis)),Zx)
-      ncol(Z)
-      nrow(Z)
       
       epshatoutofsample <- y[,i] - Z%*%xttm1[,i]
       diag.H <- diag(H)
