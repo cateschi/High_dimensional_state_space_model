@@ -1,5 +1,5 @@
 # This R-script is party based on "An Introduction to State Space Models" by Marc Wildi.
-# The function "KF_slopes" performs the estimation of the LFS model, with the multivariate auxiliary series of Google Trends. It requires the following arguments:
+# The function "KF_slopes_mixed_factor" performs the estimation of the LFS model, with the multivariate auxiliary series of Google Trends. It requires the following arguments:
 # par: initial values for the model's parameters (10x1 vector).
 # y: (5+n)xT matrix of the unemployed labour force and the n Google trends (the first 5 series are the unemployed labour force) (T=167).
 # opti: if TRUE, optimizes the function.
