@@ -1,7 +1,7 @@
 # This R-script is party based on "An Introduction to State Space Models" by Marc Wildi.
-# The function "KF_slopes" performs the estimation of the LFS model, with the multivariate auxiliary series of Google Trends. It requires the following arguments:
-# par: initial values for the model's parameters (9x1 vector).
-# y: (5+n)xT matrix of the unemployed labour force and the n Google trends (the first 5 series are the unemployed labour force) (T=167).
+# The function "KF_slopes" performs the estimation of the LFS model, with the auxiliary series of claimant counts and Google Trends. It requires the following arguments:
+# par: initial values for the model's parameters (13x1 vector).
+# y: (6+n)xT matrix of the unemployed labour force, the claiamnt counts and the n Google trends (the first 5 series are the unemployed labour force and the 6th one is the claimant counts) (T=167).
 # opti: if TRUE, optimizes the function.
 # k: Tx5 matrix of thestandard errors of the GREG estimates.
 # delta: autocorrelation coefficient of the survey errors.
@@ -21,9 +21,9 @@
     sigma_omegay <- par[2]
     sigma_lambda <- par[3]
     sd_nu <- diag(exp(c(par[4], par[5], par[6], par[7], par[8])), 5,5)
-    sigma_Rx <- par[9]
-    sigma_omegax <- par[10]
-    sigma_Rz <- log(1)
+    sigma_Rx <- par[9]      # variance of the claimant counts' slope's innovation.
+    sigma_omegax <- par[10]      # variance of the claimant counts' seasonal component's innovation.
+    sigma_Rz <- log(1)      # variance of the Google Trends' factor's innovation (it is fixed).
     x10 <- rep(0,nstates)
     Pttm1 <- lapply(seq_len(len+1), function(X) matrix(0,nstates,nstates))
     Ptt <- lapply(seq_len(len), function(X) matrix(0,nstates,nstates))
@@ -35,38 +35,36 @@
     xttm1[,1] <- x10
     R <- diag(1,nstates,nstates)
     D <- adiag(0, exp(sigma_Ry), exp(sigma_omegay)*diag(11), exp(sigma_lambda)*diag(4), sd_nu, diag(0,8,8), 0, exp(sigma_Rx), exp(sigma_omegax)*diag(11), exp(sigma_Rz))
-    R[32,2] <- tanh(par[11])
+    R[32,2] <- tanh(par[11])      # correlation between the LFS and the claimant counts' solpes' innovations.
     R[2,32] <- tanh(par[11])
-    R[44,2] <- tanh(par[12])
+    R[44,2] <- tanh(par[12])      # correlation between the LFS solpe's and the Google Trends' factor's innovations.
     R[2,44] <- tanh(par[12])
     Q <- D%*%R%*%D
     
-    #Bulid T:
+    # Bulid T (the transition matrix):
     Tymu <- matrix(c(1,1,0,1),2,2, byrow=T)
     C <- array(0,dim=c(2,2,5))
     for (l in 1:5){
       C[,,l] <- matrix(c(cos((pi*l)/6),  sin((pi*l)/6), -sin((pi*l)/6), cos((pi*l)/6)),2,2,byrow=TRUE)
     }
     Tyomega <- adiag(C[,,1],C[,,2],C[,,3],C[,,4],C[,,5],-1)
-    ncol(Tyomega)
-    nrow(Tyomega)
     Tylambda <- diag(4)
     TyE <- rbind(matrix(0,9,5), cbind(diag(4), c(0,0,0,0)))
     delta <- delta
     TyE <- cbind(TyE, rbind(c(0,0,0,0),diag(delta,nrow=4,ncol=4),matrix(0,8,4)))
     TyE <- cbind(TyE, rbind(matrix(0,5,4),diag(4),matrix(0,4,4)))
     Ty <- adiag(Tymu, Tyomega, Tylambda, TyE)
-    Tx <- adiag(Tymu, Tyomega)
-    Tz <- as.matrix(1)
+    Tx <- adiag(Tymu, Tyomega)      # transition matrix of the claimant counts' state variables.
+    Tz <- as.matrix(1)      # transition matrix of the Google Trends' factor.
     Tmatrix <- adiag(Ty, Tx, Tz)
     
-    #initialization of loglikelihood
+    # Initialization of loglikelihood:
     logl <- 0
     
-    #Start of KF recursions
+    # Start of KF recursions:
     for (i in 1:len){ 
       
-      #Bulid Z:
+      # Bulid Z:
       Zy <- c(1,0)
       Zy <- rep(Zy,6)
       Zy <- c(Zy,1)
@@ -79,20 +77,17 @@
       Zx <- rbind(Zx)
       Zz <- as.matrix(lambda,length(lambda),1)
       Z <- adiag(Zy,Zx,Zz)
-      ncol(Z)
-      nrow(Z)
       
       epshatoutofsample <- y[,i] - Z%*%xttm1[,i]
       Fmatrix <- Z%*%Pttm1[[i]]%*%t(Z) + adiag(diag(0,ncol(waves),ncol(waves)),exp(2*par[13]),diag(diag(H),nrow(y)-ncol(waves)-1,nrow(y)-ncol(waves)-1))
-      #Fmatrix[1,1] <- ifelse(!is.na(epshatoutofsample[1,]), Fmatrix[1,1], parP10[1])
-      for (j in 1:nrow(y)){
+       for (j in 1:nrow(y)){
         st.for[j,i] <- epshatoutofsample[j]/sqrt(Fmatrix[j,j])
       }
       if ((NaN %in% Fmatrix)==T){
         logl<- -P10[1]
       } else {
         svdFmatrix <- svd(Fmatrix)
-        Kg <- Pttm1[[i]]%*%t(Z)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u) #kalman gain
+        Kg <- Pttm1[[i]]%*%t(Z)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u) 
         if (is.na(epshatoutofsample[1,])){
           Kg[,c(1:ncol(waves))] <- matrix(0,nstates,ncol(waves))
         }
@@ -103,18 +98,18 @@
           Kg[,c((ncol(waves)+2):ncol(Kg))] <- matrix(0,nstates,ncol(Kg)-(ncol(waves)+1))
         }
         epshatoutofsample <- ifelse(is.na(epshatoutofsample), 0, epshatoutofsample)
-        xtt[,i] <- xttm1[,i]+Kg%*%epshatoutofsample #compute x_{t|t}
-        epshatinsample <- y[,i]-Z%*%xtt[,i] #in-sample forecast error (after y_t has been observed)
+        xtt[,i] <- xttm1[,i]+Kg%*%epshatoutofsample 
+        epshatinsample <- y[,i]-Z%*%xtt[,i]
         epshatinsample <- ifelse(is.na(epshatinsample), 0, epshatinsample)
-        Ptt[[i]] <- Pttm1[[i]]-Kg%*%Z%*%Pttm1[[i]] #compute P_{t|t}
-        Pttm1[[i+1]] <- Tmatrix%*%Ptt[[i]]%*%t(Tmatrix)+Q #compute P_{t+1|t}
-        xttm1[,i+1] <- Tmatrix%*%xtt[,i] #compute x_{t+1|t}
+        Ptt[[i]] <- Pttm1[[i]]-Kg%*%Z%*%Pttm1[[i]] 
+        Pttm1[[i+1]] <- Tmatrix%*%Ptt[[i]]%*%t(Tmatrix)+Q 
+        xttm1[,i+1] <- Tmatrix%*%xtt[,i] 
       
-        #The optimization criterion
+        # The optimization criterion:
         if (outofsample) {
           if (i <= (nstates-13) ){
             logl <- logl - nrow(y)/2*log(2*pi)
-          } else if (i > (nstates-13) ){ # diffuse log likelihood
+          } else if (i > (nstates-13) ){ 
             logl <- logl - nrow(y)/2*log(2*pi) - 1/2*log(det(Fmatrix)) - 1/2*t(epshatoutofsample)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u)%*%epshatoutofsample
             if ((NaN %in% logl)==T){
               logl<- -P10[1]
@@ -123,7 +118,7 @@
         } else {
           if (i <= (nstates-13) ){
             logl <- logl - nrow(y)/2*log(2*pi)
-          } else if (i > (nstates-13) ){ # diffuse log likelihood
+          } else if (i > (nstates-13) ){ 
             logl <- logl - nrow(y)/2*log(2*pi) - 1/2*log(det(Fmatrix)) - 1/2*t(epshatinsample)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u)%*%epshatinsample
             if ((NaN %in% logl)==T){
               logl<- -P10[1]
@@ -138,4 +133,14 @@
     else {
       return(list(logl=-logl, xtt=xtt,xttm1=xttm1,Pttm1=Pttm1,Ptt=Ptt,st.for=st.for))
     }
-  } #y1 and y2 have smooth trend and y3 has local level
+  } 
+                  
+                  
+objopt <-  optim(par=c(log(2000),log(0.02),log(900),log(1.07),log(0.99*(1-0.21^2)),
+                           log(1.01*(1-0.21^2)),log(1.13*(1-0.21^2)),log(1.06*(1-0.21^2)),log(3000),log(0.02),0,0,log(1000)),
+                     KF_slopes_mixed_factor_CC,y=y,opti=T,k=k,delta=0.21,outofsample=T,
+                     parP10=1000000000000,nstates=44,lambda=Lambda.hat.max[,1],H=H,  hessian=F, method="L-BFGS-B")
+par <- objopt$par
+obj <- KF_slopes_mixed_factor_CC(par=objopt$par,y=y,opti=F,k=k,delta=0.21,outofsample=T,parP10=1000000000000,
+                                     nstates=44,lambda=Lambda.hat.max[,1],H=H)
+    
