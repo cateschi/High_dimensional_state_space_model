@@ -10,7 +10,7 @@
 # nstates: number of state variables in the model.
 # lambda: nx1 vector of estimated, by PCA, factor's loading: ONLY 1 FACTOR IS ESTIMATED FOR THE GOOGLE TRENDS.
 # H: the nxn estimated covariance matrix, by PCA, of the idiosyncratic components of the Google Trends.
-# ns.id: 
+# ns.id: vector of length equal to the number of nonstationary idiosyncratic components. It should contain the ordered numbers corresponing to the nonstationary idiosyncratic components.
 
 # The lines that are not commented here, are commented on KalmanFilter/LFS_model.R.  
 
