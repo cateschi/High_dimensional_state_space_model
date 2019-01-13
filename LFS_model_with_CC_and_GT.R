@@ -10,12 +10,13 @@
 # nstates: number of state variables in the model.
 # lambda: nx1 vector of estimated, by PCA, factor's loading: ONLY 1 FACTOR IS ESTIMATED FOR THE GOOGLE TRENDS.
 # H: the nxn estimated covariance matrix, by PCA, of the stationary idiosyncratic components of the Google Trends.
+# ns.id: 
 
 # The lines that are not commented here, are commented on KalmanFilter/LFS_model.R, KalmanFilter/LFS_model_with_CC.R and KalmanFilter/LFS_model_with_GT.R  
   
   
   
-  KF_slopes_mixed_factor_CC <- function(par,y,opti,k,delta,outofsample,parP10,nstates,lambda,H){
+  KF_slopes_mixed_factor_CC <- function(par,y,opti,k,delta,outofsample,parP10,nstates,lambda,H,ns.id){
     len <- length(y[1,])
     sigma_Ry <- par[1]
     sigma_omegay <- par[2]
@@ -34,7 +35,7 @@
     xttm1 <- matrix(0,nstates,(len+1))
     xttm1[,1] <- x10
     R <- diag(1,nstates,nstates)
-    D <- adiag(0, exp(sigma_Ry), exp(sigma_omegay)*diag(11), exp(sigma_lambda)*diag(4), sd_nu, diag(0,8,8), 0, exp(sigma_Rx), exp(sigma_omegax)*diag(11), exp(sigma_Rz))
+    D <- adiag(0, exp(sigma_Ry), exp(sigma_omegay)*diag(11), exp(sigma_lambda)*diag(4), sd_nu, diag(0,8,8), 0, exp(sigma_Rx), exp(sigma_omegax)*diag(11), exp(sigma_Rz), diag(sqrt(diag(H)[ns.id])))
     R[32,2] <- tanh(par[11])      # correlation between the LFS and the claimant counts' solpes' innovations.
     R[2,32] <- tanh(par[11])
     R[44,2] <- tanh(par[12])      # correlation between the LFS solpe's and the Google Trends' factor's innovations.
@@ -55,7 +56,7 @@
     TyE <- cbind(TyE, rbind(matrix(0,5,4),diag(4),matrix(0,4,4)))
     Ty <- adiag(Tymu, Tyomega, Tylambda, TyE)
     Tx <- adiag(Tymu, Tyomega)      # transition matrix of the claimant counts' state variables.
-    Tz <- as.matrix(1)      # transition matrix of the Google Trends' factor.
+    Tz <- diag(1,ncol=(length(ns.id)+1), nrow=(length(ns.id)+1))      # transition matrix of the Google Trends' factor and the nonstationary idiosyncratic components.
     Tmatrix <- adiag(Ty, Tx, Tz)
     
     # Initialization of loglikelihood:
@@ -75,19 +76,24 @@
       Zx <- rep(Zx,6)
       Zx <- c(Zx,1)
       Zx <- rbind(Zx)
-      Zz <- as.matrix(lambda,length(lambda),1)
-      Z <- adiag(Zy,Zx,Zz)
+      one.ns.id <- rep(0, nrow(H))
+      one.ns.id[ns.id] <- 1      # one if element of vector corresponds to nonstationary idiosyncratic component.
+      Zz <- cbind(as.matrix(lambda,length(lambda),1),diag(one.ns.id))
+      Zz <- Zz[,which(!apply(Zz,2,FUN = function(x){all(x == 0)}))]
+      Z <- adiag(Zy,Zx,as.matrix(Zz))
       
       epshatoutofsample <- y[,i] - Z%*%xttm1[,i]
-      Fmatrix <- Z%*%Pttm1[[i]]%*%t(Z) + adiag(diag(0,ncol(waves),ncol(waves)),exp(2*par[13]),diag(diag(H),nrow(y)-ncol(waves)-1,nrow(y)-ncol(waves)-1))
-       for (j in 1:nrow(y)){
+      diag.H <- diag(H)
+      diag.H[ns.id] <- 0      # only variances of stationary idiosyncratic components.
+      Fmatrix <- Z%*%Pttm1[[i]]%*%t(Z) + adiag(diag(0,ncol(waves),ncol(waves)),exp(2*par[13]),diag(diag.H,nrow(y)-ncol(waves)-1,nrow(y)-ncol(waves)-1))
+      for (j in 1:nrow(y)){
         st.for[j,i] <- epshatoutofsample[j]/sqrt(Fmatrix[j,j])
       }
       if ((NaN %in% Fmatrix)==T){
         logl<- -P10[1]
       } else {
         svdFmatrix <- svd(Fmatrix)
-        Kg <- Pttm1[[i]]%*%t(Z)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u) 
+        Kg <- Pttm1[[i]]%*%t(Z)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u)
         if (is.na(epshatoutofsample[1,])){
           Kg[,c(1:ncol(waves))] <- matrix(0,nstates,ncol(waves))
         }
@@ -99,26 +105,26 @@
         }
         epshatoutofsample <- ifelse(is.na(epshatoutofsample), 0, epshatoutofsample)
         xtt[,i] <- xttm1[,i]+Kg%*%epshatoutofsample 
-        epshatinsample <- y[,i]-Z%*%xtt[,i]
+        epshatinsample <- y[,i]-Z%*%xtt[,i] 
         epshatinsample <- ifelse(is.na(epshatinsample), 0, epshatinsample)
         Ptt[[i]] <- Pttm1[[i]]-Kg%*%Z%*%Pttm1[[i]] 
         Pttm1[[i+1]] <- Tmatrix%*%Ptt[[i]]%*%t(Tmatrix)+Q 
         xttm1[,i+1] <- Tmatrix%*%xtt[,i] 
-      
+        
         # The optimization criterion:
         if (outofsample) {
-          if (i <= (nstates-13) ){
+          if (i <= (30-13) ){
             logl <- logl - nrow(y)/2*log(2*pi)
-          } else if (i > (nstates-13) ){ 
+          } else if (i > (30-13) ){ 
             logl <- logl - nrow(y)/2*log(2*pi) - 1/2*log(det(Fmatrix)) - 1/2*t(epshatoutofsample)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u)%*%epshatoutofsample
             if ((NaN %in% logl)==T){
               logl<- -P10[1]
             }
           }
         } else {
-          if (i <= (nstates-13) ){
+          if (i <= (30-13) ){
             logl <- logl - nrow(y)/2*log(2*pi)
-          } else if (i > (nstates-13) ){ 
+          } else if (i > (30-13) ){ 
             logl <- logl - nrow(y)/2*log(2*pi) - 1/2*log(det(Fmatrix)) - 1/2*t(epshatinsample)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u)%*%epshatinsample
             if ((NaN %in% logl)==T){
               logl<- -P10[1]
