@@ -9,6 +9,8 @@
 # parP10: large number for the diffuse initialization.
 # nstates: number of state variables in the model.
 
+# The lines that are not commented here, are commented on KalmanFilter/LFS_model.R.
+
 
 
 KF_slopes <- function(par,y,k,delta,opti,outofsample,parP10,nstates){
@@ -17,15 +19,15 @@ KF_slopes <- function(par,y,k,delta,opti,outofsample,parP10,nstates){
     sigma_omegay <- par[2]
     sigma_lambda <- par[3]
     sd_nu <- diag(exp(c(par[4], par[5], par[6], par[7], par[8])), 5,5)
-    sigma_Rx <- par[9]
-    sigma_omegax <- par[10]
+    sigma_Rx <- par[9]      # variance of the claimant counts' slope's innovation.
+    sigma_omegax <- par[10]      # variance of the claimant counts' seasonal component's innovation.
     x10 <- rep(0,nstates)
     Pttm1 <- lapply(seq_len(len+1), function(X) matrix(0,nstates,nstates))
     Ptt <- lapply(seq_len(len), function(X) matrix(0,nstates,nstates))
     P10 <- diag(c(rep(parP10[1],17),c(1,rep((1-delta^2),4),1,rep((1-delta^2),3),1,rep((1-delta^2),3)),rep(parP10[1],nstates-30)),nstates,nstates)     
     Pttm1[[1]] <- P10
     xtt <- matrix(0,nstates,(len))
-    st.for <- matrix(0,nrow(y),len)
+    st.for <- matrix(0,nrow(y),len)      # matrix to store the standardized the one-step-ahead forecast errors.
     xttm1 <- matrix(0,nstates,(len+1))
     xttm1[,1] <- x10
     R <- diag(1,nstates,nstates)
@@ -33,33 +35,31 @@ KF_slopes <- function(par,y,k,delta,opti,outofsample,parP10,nstates){
     R[32,2] <- tanh(par[11])
     R[2,32] <- tanh(par[11])
     Q <- D%*%R%*%D
-    H <- adiag(diag(0,5,5), exp(2*par[12]))
+    H <- adiag(diag(0,5,5), exp(2*par[12]))      # covariance matrix of the innovations in the measurement equations.
     
-    #Bulid T:
+    # Bulid T (the transition matrix):
     Tymu <- matrix(c(1,1,0,1),2,2, byrow=T)
     C <- array(0,dim=c(2,2,5))
     for (l in 1:5){
       C[,,l] <- matrix(c(cos((pi*l)/6),  sin((pi*l)/6), -sin((pi*l)/6), cos((pi*l)/6)),2,2,byrow=TRUE)
     }
     Tyomega <- adiag(C[,,1],C[,,2],C[,,3],C[,,4],C[,,5],-1)
-    ncol(Tyomega)
-    nrow(Tyomega)
     Tylambda <- diag(4)
     TyE <- rbind(matrix(0,9,5), cbind(diag(4), c(0,0,0,0)))
     delta <- delta
     TyE <- cbind(TyE, rbind(c(0,0,0,0),diag(delta,nrow=4,ncol=4),matrix(0,8,4)))
     TyE <- cbind(TyE, rbind(matrix(0,5,4),diag(4),matrix(0,4,4)))
     Ty <- adiag(Tymu, Tyomega, Tylambda, TyE)
-    Tx <- adiag(Tymu, Tyomega)
+    Tx <- adiag(Tymu, Tyomega)      # transition matrix of the claimant counts' state variables.
     Tmatrix <- adiag(Ty, Tx)
     
-    #initialization of loglikelihood
+    # Initialization of loglikelihood:
     logl <- 0
     
-    #Start of KF recursions
+    # Start of KF recursions:
     for (i in 1:len){ 
       
-      #Bulid Z:
+      # Bulid Z:
       Zy <- c(1,0)
       Zy <- rep(Zy,6)
       Zy <- c(Zy,1)
@@ -71,20 +71,17 @@ KF_slopes <- function(par,y,k,delta,opti,outofsample,parP10,nstates){
       Zx <- c(Zx,1)
       Zx <- rbind(Zx)
       Z <- adiag(Zy,Zx)
-      ncol(Z)
-      nrow(Z)
       
       epshatoutofsample <- y[,i] - Z%*%xttm1[,i]
       Fmatrix <- Z%*%Pttm1[[i]]%*%t(Z) + H
-      #Fmatrix[1,1] <- ifelse(!is.na(epshatoutofsample[1,]), Fmatrix[1,1], parP10[1])
       for (j in 1:nrow(y)){
-        st.for[j,i] <- epshatoutofsample[j]/sqrt(Fmatrix[j,j])
+        st.for[j,i] <- epshatoutofsample[j]/sqrt(Fmatrix[j,j])      # standardized one-step-ahead forecast errors.
       }
       if ((NaN %in% Fmatrix)==T){
         logl<- -P10[1]
       } else {
         svdFmatrix <- svd(Fmatrix)
-        Kg <- Pttm1[[i]]%*%t(Z)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u) #kalman gain
+        Kg <- Pttm1[[i]]%*%t(Z)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u)     
         if (is.na(epshatoutofsample[1,])){
           Kg[,c(1:ncol(waves))] <- matrix(0,nstates,ncol(waves))
         }
@@ -92,18 +89,18 @@ KF_slopes <- function(par,y,k,delta,opti,outofsample,parP10,nstates){
           Kg[,(ncol(waves)+1)] <- rep(0,nstates)
         }
         epshatoutofsample <- ifelse(is.na(epshatoutofsample), 0, epshatoutofsample)
-        xtt[,i] <- xttm1[,i]+Kg%*%epshatoutofsample #compute x_{t|t}
-        epshatinsample <- y[,i]-Z%*%xtt[,i] #in-sample forecast error (after y_t has been observed)
+        xtt[,i] <- xttm1[,i]+Kg%*%epshatoutofsample      
+        epshatinsample <- y[,i]-Z%*%xtt[,i]      
         epshatinsample <- ifelse(is.na(epshatinsample), 0, epshatinsample)
-        Ptt[[i]] <- Pttm1[[i]]-Kg%*%Z%*%Pttm1[[i]] #compute P_{t|t}
-        Pttm1[[i+1]] <- Tmatrix%*%Ptt[[i]]%*%t(Tmatrix)+Q #compute P_{t+1|t}
-        xttm1[,i+1] <- Tmatrix%*%xtt[,i] #compute x_{t+1|t}
+        Ptt[[i]] <- Pttm1[[i]]-Kg%*%Z%*%Pttm1[[i]]     
+        Pttm1[[i+1]] <- Tmatrix%*%Ptt[[i]]%*%t(Tmatrix)+Q      
+        xttm1[,i+1] <- Tmatrix%*%xtt[,i]     
         
         #The optimization criterion
         if (outofsample) {
           if (i <= (nstates-13) ){
             logl <- logl - nrow(y)/2*log(2*pi)
-          } else if (i > (nstates-13) ){ # diffuse log likelihood
+          } else if (i > (nstates-13) ){     
             logl <- logl - nrow(y)/2*log(2*pi) - 1/2*log(det(Fmatrix)) - 1/2*t(epshatoutofsample)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u)%*%epshatoutofsample
             if ((NaN %in% logl)==T){
               logl<- -P10[1]
@@ -112,7 +109,7 @@ KF_slopes <- function(par,y,k,delta,opti,outofsample,parP10,nstates){
         } else {
           if (i <= (nstates-13) ){
             logl <- logl - nrow(y)/2*log(2*pi)
-          } else if (i > (nstates-13) ){ # diffuse log likelihood
+          } else if (i > (nstates-13) ){ 
             logl <- logl - nrow(y)/2*log(2*pi) - 1/2*log(det(Fmatrix)) - 1/2*t(epshatinsample)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u)%*%epshatinsample
             if ((NaN %in% logl)==T){
               logl<- -P10[1]
@@ -128,3 +125,12 @@ KF_slopes <- function(par,y,k,delta,opti,outofsample,parP10,nstates){
       return(list(logl=-logl, xtt=xtt,xttm1=xttm1,Pttm1=Pttm1,Ptt=Ptt,st.for=st.for))
     }
   }
+                  
+                  
+objopt <-  optim(par=c(log(2000),log(0.02),log(900),log(1.07),log(0.99*(1-0.21^2)),
+                       log(1.01*(1-0.21^2)),log(1.13*(1-0.21^2)),log(1.06*(1-0.21^2)),
+                       log(3000),log(0.02),0,log(1000)),
+                 KF_slopes,y=y,k=k,delta=0.21,opti=T,outofsample=T,parP10=1000000000000,nstates=43,  hessian=F, method="L-BFGS-B")
+par <- objopt$par
+obj <- KF_slopes(par=objopt$par,y=y,k=k,delta=0.21,opti=F,outofsample=T,parP10=1000000000000,nstates=43)
+
