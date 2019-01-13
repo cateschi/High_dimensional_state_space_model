@@ -1,6 +1,6 @@
-  # This R-script is party based on "An Introduction to State Space Models" by Marc Wildi.
+# This R-script is party based on "An Introduction to State Space Models" by Marc Wildi.
 # The function "KF_slopes" performs the estimation of the LFS model, with the multivariate auxiliary series of Google Trends. It requires the following arguments:
-# par: initial values for the model's parameters (9x1 vector).
+# par: initial values for the model's parameters (10x1 vector).
 # y: (5+n)xT matrix of the unemployed labour force and the n Google trends (the first 5 series are the unemployed labour force) (T=167).
 # opti: if TRUE, optimizes the function.
 # k: Tx5 matrix of thestandard errors of the GREG estimates.
@@ -8,10 +8,10 @@
 # outofsample: if TRUE, computes the loglikelihood based on the out-of-sample forecast errors.
 # parP10: large number for the diffuse initialization.
 # nstates: number of state variables in the model.
-# lambda: nx1 vector of estimated, by PCA, factor's loading: ONLY 1 FACTOR IS ESTIMATED FOR THE GOOGLE TRENDS.
+# lambda: nx2 matrix of estimated, by PCA, factors' loadings: 2 FACTORS ARE ESTIMATED FOR THE GOOGLE TRENDS.
 # H: the nxn estimated covariance matrix, by PCA, of the stationary idiosyncratic components of the Google Trends.
 
-# The lines that are not commented here, are commented on KalmanFilter/LFS_model.R.  
+# The lines that are not commented here, are commented on KalmanFilter/LFS_model.R and KalmanFilter/LFS_model_with_GT.R.  
 
   
   
@@ -21,8 +21,8 @@
     sigma_omegay <- par[2]
     sigma_lambda <- par[3]
     sd_nu <- diag(exp(c(par[4], par[5], par[6], par[7], par[8])), 5,5)
-    sigma_Rx1 <- log(1)
-    sigma_Rx2 <- log(1)
+    sigma_Rx1 <- log(1)      # variance of the first Google Trends' factor's innovation (it is fixed).
+    sigma_Rx2 <- log(1)      # variance of the second Google Trends' factor's innovation (it is fixed).
     x10 <- rep(0,nstates)
     Pttm1 <- lapply(seq_len(len+1), function(X) matrix(0,nstates,nstates))
     Ptt <- lapply(seq_len(len), function(X) matrix(0,nstates,nstates))
@@ -33,15 +33,15 @@
     xttm1[,1] <- x10
     R <- diag(1,nstates,nstates)
     D <- adiag(0, exp(sigma_Ry), exp(sigma_omegay)*diag(11), exp(sigma_lambda)*diag(4), sd_nu, diag(0,8,8), exp(sigma_Rx1), exp(sigma_Rx2), diag(sqrt(diag(H)[ns.id])))
-    gamma1 <- par[9]
-    gamma2 <- par[10]
+    gamma1 <- par[9]      # correlation between the LFS solpe's and the first Google Trends' factor's innovations.
+    gamma2 <- par[10]      # correlation between the LFS solpe's and the second Google Trends' factor's innovations.
     R[31,2] <- tanh(gamma1)
     R[2,31] <- tanh(gamma1)
     R[32,2] <- tanh(gamma2)
     R[2,32] <- tanh(gamma2)
     Q <- D%*%R%*%D
     
-    #Build T:
+    # Build T (the transition matrix):
     Tymu <- matrix(c(1,1,0,1),2,2, byrow=T)
     C <- array(0,dim=c(2,2,5))
     for (l in 1:5){
@@ -56,10 +56,10 @@
     TyE <- cbind(TyE, rbind(c(0,0,0,0),diag(delta,nrow=4,ncol=4),matrix(0,8,4)))
     TyE <- cbind(TyE, rbind(matrix(0,5,4),diag(4),matrix(0,4,4)))
     Ty <- adiag(Tymu, Tyomega, Tylambda, TyE)
-    Tx <- diag(1,ncol=(length(ns.id)+2), nrow=(length(ns.id)+2))
+    Tx <- diag(1,ncol=(length(ns.id)+2), nrow=(length(ns.id)+2))      # transition matrix of the Google Trends' factors.
     Tmatrix <- adiag(Ty, Tx)
     
-    #initialization of loglikelihood
+    # Initialization of loglikelihood:
     logl <- 0
     
     #Start of KF recursions
