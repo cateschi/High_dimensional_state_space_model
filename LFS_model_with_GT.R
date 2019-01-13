@@ -21,7 +21,7 @@ KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates
     sigma_omegay <- par[2]
     sigma_lambda <- par[3]
     sd_nu <- diag(exp(c(par[4], par[5], par[6], par[7], par[8])), 5,5)
-    sigma_Rx <- log(1)      # variance of the factor's innovation (it is fixed).
+    sigma_Rx <- log(1)      # variance of the Google Trends' factor's innovation (it is fixed).
     x10 <- rep(0,nstates)
     Pttm1 <- lapply(seq_len(len+1), function(X) matrix(0,nstates,nstates))
     Ptt <- lapply(seq_len(len), function(X) matrix(0,nstates,nstates))
