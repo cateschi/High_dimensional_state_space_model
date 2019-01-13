@@ -46,26 +46,24 @@ KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates
       C[,,l] <- matrix(c(cos((pi*l)/6),  sin((pi*l)/6), -sin((pi*l)/6), cos((pi*l)/6)),2,2,byrow=TRUE)
     }
     Tyomega <- adiag(C[,,1],C[,,2],C[,,3],C[,,4],C[,,5],-1)
-    ncol(Tyomega)
-    nrow(Tyomega)
     Tylambda <- diag(4)
     TyE <- rbind(matrix(0,9,5), cbind(diag(4), c(0,0,0,0)))
     delta <- delta
     TyE <- cbind(TyE, rbind(c(0,0,0,0),diag(delta,nrow=4,ncol=4),matrix(0,8,4)))
     TyE <- cbind(TyE, rbind(matrix(0,5,4),diag(4),matrix(0,4,4)))
     Ty <- adiag(Tymu, Tyomega, Tylambda, TyE)
-    Tx <- adiag(matrix(c(1,1,0,0,0,sARIMA[1],1,1,0,sARIMA[2],0,0,0,0,sARIMA[3]/sARIMA[2],0),4,4,byrow=T),diag(1,ncol=(length(ns.id)), nrow=(length(ns.id))))
+    Tx <- adiag(matrix(c(1,1,0,0,0,sARIMA[1],1,1,0,sARIMA[2],0,0,0,0,sARIMA[3]/sARIMA[2],0),4,4,byrow=T),diag(1,ncol=(length(ns.id)), nrow=(length(ns.id))))      # include the ARIMA estimated coefficients in the transition matrix for the Google Trends' factor.
     Tmatrix <- adiag(Ty, Tx)
     
-    Rt <- adiag(diag(nstates-length(ns.id)-4),diag(c(0,1,0,sARIMA[4])),diag(length(ns.id)))
+    Rt <- adiag(diag(nstates-length(ns.id)-4),diag(c(0,1,0,sARIMA[4])),diag(length(ns.id)))      # R matrix that premultiplies the states' innovations in the transition matrix.
     
-    #initialization of loglikelihood
+    # Initialization of loglikelihood:
     logl <- 0
     
-    #Start of KF recursions
+    # Start of KF recursions:
     for (i in 1:len){
       
-      #Bulild Z:
+      # Bulild Z:
       Zy <- c(1,0)
       Zy <- rep(Zy,6)
       Zy <- c(Zy,1)
@@ -73,24 +71,21 @@ KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates
       Zy <- cbind(Zy,rbind(c(0,0,0,0),diag(4)))
       Zy <- cbind(Zy, diag(as.numeric(k[i,]), nrow=5, ncol=5), matrix(0, nrow=5, ncol=8))
       one.ns.id <- rep(0, nrow(H))
-      one.ns.id[ns.id] <- 1  # one if element of vector corresponds to nonstationary idiosyncratic component
+      one.ns.id[ns.id] <- 1      # one if element of vector corresponds to nonstationary idiosyncratic component.
       Zx <- diag(one.ns.id)
       Zx <- Zx[,which(!apply(Zx,2,FUN = function(x){all(x == 0)}))]
       Zx <- cbind(as.matrix(lambda,length(lambda),1)%*%matrix(c(1,1,0,0),1,4,byrow=T),Zx)
       Z <- adiag(Zy,Zx)
-      ncol(Z)
-      nrow(Z)
       
       epshatoutofsample <- y[,i] - Z%*%xttm1[,i]
       diag.H <- diag(H)
-      diag.H[ns.id] <- 0  # only variances of stationary idiosyncratic components
+      diag.H[ns.id] <- 0      # only variances of stationary idiosyncratic components.
       Fmatrix <- Z%*%Pttm1[[i]]%*%t(Z) + adiag(diag(0,ncol(waves),ncol(waves)),diag(diag.H,nrow(y)-ncol(waves),nrow(y)-ncol(waves)))
-      #Fmatrix[1,1] <- ifelse(!is.na(epshatoutofsample[1,]), Fmatrix[1,1], parP10[1])
       if ((NaN %in% Fmatrix)==T){
         logl<- -P10[1]
       } else {
         svdFmatrix <- svd(Fmatrix)
-        Kg <- Pttm1[[i]]%*%t(Z)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u) #kalman gain
+        Kg <- Pttm1[[i]]%*%t(Z)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u) 
         if (is.na(epshatoutofsample[1,])){
           Kg[,c(1:ncol(waves))] <- matrix(0,nstates,ncol(waves))
         }
@@ -98,18 +93,18 @@ KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates
           Kg[,c((ncol(waves)+1):ncol(Kg))] <- matrix(0,nstates,ncol(Kg)-(ncol(waves)))
         }
         epshatoutofsample <- ifelse(is.na(epshatoutofsample), 0, epshatoutofsample)
-        xtt[,i] <- xttm1[,i]+Kg%*%epshatoutofsample #compute x_{t|t}
-        epshatinsample <- y[,i]-Z%*%xtt[,i] #in-sample forecast error (after y_t has been observed)
+        xtt[,i] <- xttm1[,i]+Kg%*%epshatoutofsample 
+        epshatinsample <- y[,i]-Z%*%xtt[,i] 
         epshatinsample <- ifelse(is.na(epshatinsample), 0, epshatinsample)
-        Ptt[[i]] <- Pttm1[[i]]-Kg%*%Z%*%Pttm1[[i]] #compute P_{t|t}
-        Pttm1[[i+1]] <- Tmatrix%*%Ptt[[i]]%*%t(Tmatrix)+Rt%*%Q%*%t(Rt) #compute P_{t+1|t}
-        xttm1[,i+1] <- Tmatrix%*%xtt[,i] #compute x_{t+1|t}
+        Ptt[[i]] <- Pttm1[[i]]-Kg%*%Z%*%Pttm1[[i]] 
+        Pttm1[[i+1]] <- Tmatrix%*%Ptt[[i]]%*%t(Tmatrix)+Rt%*%Q%*%t(Rt) 
+        xttm1[,i+1] <- Tmatrix%*%xtt[,i] 
         
-        #The optimization criterion
+        # The optimization criterion:
         if (outofsample) {
           if (i <= (30-13) ){
             logl <- logl - nrow(y)/2*log(2*pi)
-          } else if (i > (30-13) ){ # diffuse log likelihood
+          } else if (i > (30-13) ){ 
             logl <- logl - nrow(y)/2*log(2*pi) - 1/2*log(det(Fmatrix)) - 1/2*t(epshatoutofsample)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u)%*%epshatoutofsample
             if ((NaN %in% logl)==T){
               logl<- -P10[1]
@@ -118,7 +113,7 @@ KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates
         } else {
           if (i <= (30-13) ){
             logl <- logl - nrow(y)/2*log(2*pi)
-          } else if (i > (30-13) ){ # diffuse log likelihood
+          } else if (i > (30-13) ){ 
             logl <- logl - nrow(y)/2*log(2*pi) - 1/2*log(det(Fmatrix)) - 1/2*t(epshatinsample)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u)%*%epshatinsample
             if ((NaN %in% logl)==T){
               logl<- -P10[1]
@@ -133,5 +128,15 @@ KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates
     else {
       return(list(logl=-logl, xtt=xtt,xttm1=xttm1,Pttm1=Pttm1,Ptt=Ptt))
     }
-  } #y1 has smooth trend and y2 has local level
+  } 
+                  
+      
+objopt <- optim(par=c(log(2000),log(0.02),log(900),log(1.07),log(0.99*(1-0.21^2)),
+                          log(1.01*(1-0.21^2)),log(1.13*(1-0.21^2)),log(1.06*(1-0.21^2)),0), 
+                    KF_slopes_mixed_factor,y=y,opti=T,k=k,delta=0.21,outofsample=T,
+                    parP10=1000000000000,nstates=34+length(rev(tis[,2])[j.star:s]),lambda=Lambda.hat.max[,1],H=H, ns.id=sort(rev(tis[,2])[j.star:s]), sARIMA=sARIMA, hessian=F, method="L-BFGS-B")
+par <- objopt$par
+obj <- KF_slopes_mixed_factor(par=objopt$par,y=y,opti=F,k=k,delta=0.21,outofsample=T,parP10=1000000000000,
+                                  nstates=34+length(rev(tis[,2])[j.star:s]),lambda=Lambda.hat.max[,1],H=H, ns.id=sort(rev(tis[,2])[j.star:s]), sARIMA=sARIMA)
+    
  
