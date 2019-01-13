@@ -1,5 +1,15 @@
+# The function "KF_slopes_univ" performs the estimation of the LFS model, without auxuliary series. It requires the following arguments:
+# par: initial values for the model's parameters.
+# y: 5xT matrix of the unemployed labour force (T=167).
+# opti: if TRUE, optimizes the function.
+# k: Tx5 matrix of thestandard errors of the GREG estimates.
+# delta: autocorrelation coefficient of the survey errors.
+# outofsample: if TRUE,
+# parP10: large number for the diffuse initialization.
+# nstates: number of state variables in the model.
+
 KF_slopes_univ <- function(par,y,opti,k,delta,outofsample,parP10,nstates){
-    len <- length(y[1,])
+    len <- length(y[1,])      # sample size
     sigma_Ry <- par[1]
     sigma_omegay <- par[2]
     sigma_lambda <- par[3]
@@ -99,3 +109,12 @@ KF_slopes_univ <- function(par,y,opti,k,delta,outofsample,parP10,nstates){
       return(list(logl=-logl, xtt=xtt,xttm1=xttm1,Pttm1=Pttm1,Ptt=Ptt))
     }
   }
+                  
+                  
+objopt <-  optim(par=c(log(2000),log(0.02),log(900),log(1.07),log(0.99*(1-0.21^2)),
+                       log(1.01*(1-0.21^2)),log(1.13*(1-0.21^2)),log(1.06*(1-0.21^2))),
+                 KF_slopes_univ,y=y[1:5,],k=k,delta=0.21,opti=T,outofsample=T,parP10=1000000000000,nstates=30,  
+                 hessian=F, method="L-BFGS-B" )      # optimize the function.
+par <- objopt$par      # estimated parameters.
+obj <- KF_slopes_univ(par=objopt$par,y=y[1:5,],k=k,delta=0.21,opti=F,outofsample=T,parP10=1000000000000,nstates=30)      # Kalman filter estimation.
+
