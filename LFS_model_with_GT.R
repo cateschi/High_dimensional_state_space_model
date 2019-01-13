@@ -51,7 +51,7 @@
     TyE <- cbind(TyE, rbind(c(0,0,0,0),diag(delta,nrow=4,ncol=4),matrix(0,8,4)))
     TyE <- cbind(TyE, rbind(matrix(0,5,4),diag(4),matrix(0,4,4)))
     Ty <- adiag(Tymu, Tyomega, Tylambda, TyE)
-    Tx <- diag(1,ncol=(length(ns.id)+1), nrow=(length(ns.id)+1))      # transition matrix of the Google Trends' factor.
+    Tx <- diag(1,ncol=(length(ns.id)+1), nrow=(length(ns.id)+1))      # transition matrix of the Google Trends' factor and the nonstationary idiosyncratic components.
     Tmatrix <- adiag(Ty, Tx)
     
     # Initialization of loglikelihood:
