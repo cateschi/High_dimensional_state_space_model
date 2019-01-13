@@ -29,7 +29,6 @@ KF_slopes_univ <- function(par,y,opti,k,delta,outofsample,parP10,nstates){
     D <- adiag(0, exp(sigma_Ry), exp(sigma_omegay)*diag(11), exp(sigma_lambda)*diag(4), sd_nu, diag(0,8,8))
     Q <- D%*%R%*%D      # states innovations' covariance matrix.
 
-    
     # Bulid T (the tranistion matrix):
     Tymu <- matrix(c(1,1,0,1),2,2, byrow=T)      # transition matrix of the trend's level and slope.
     C <- array(0,dim=c(2,2,5))
