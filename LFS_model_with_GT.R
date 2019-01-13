@@ -9,7 +9,7 @@
 # parP10: large number for the diffuse initialization.
 # nstates: number of state variables in the model.
 # lambda: nx1 vector of estimated, by PCA, factor's loading: ONLY 1 FACTOR IS ESTIMATED FOR THE GOOGLE TRENDS.
-# H: the nxn estimated covariance matrix, by PCA, of the stationary idiosyncratic components of the Google Trends.
+# H: the nxn estimated covariance matrix, by PCA, of the idiosyncratic components of the Google Trends.
 # ns.id: 
 
 # The lines that are not commented here, are commented on KalmanFilter/LFS_model.R.  
