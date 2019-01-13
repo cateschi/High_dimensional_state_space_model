@@ -96,7 +96,7 @@ KF_slopes <- function(par,y,k,delta,opti,outofsample,parP10,nstates){
         Pttm1[[i+1]] <- Tmatrix%*%Ptt[[i]]%*%t(Tmatrix)+Q      
         xttm1[,i+1] <- Tmatrix%*%xtt[,i]     
         
-        #The optimization criterion
+        # The optimization criterion:
         if (outofsample) {
           if (i <= (nstates-13) ){
             logl <- logl - nrow(y)/2*log(2*pi)
