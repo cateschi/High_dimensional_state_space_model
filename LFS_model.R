@@ -44,13 +44,13 @@ KF_slopes_univ <- function(par,y,opti,k,delta,outofsample,parP10,nstates){
     Ty <- adiag(Tymu, Tyomega, Tylambda, TyE)
     Tmatrix <- Ty
     
-    #initialization of loglikelihood
+    # Initialization of loglikelihood:
     logl <- 0      
     
-    #Start of KF recursions
+    # Start of KF recursions:
     for (i in 1:len){
       
-      #Bulid Z:
+      # Bulid Z:
       Zy <- c(1,0)
       Zy <- rep(Zy,6)
       Zy <- c(Zy,1)
@@ -77,7 +77,7 @@ KF_slopes_univ <- function(par,y,opti,k,delta,outofsample,parP10,nstates){
         Pttm1[[i+1]] <- Tmatrix%*%Ptt[[i]]%*%t(Tmatrix)+Q      # compute P_{t+1|t}.
         xttm1[,i+1] <- Tmatrix%*%xtt[,i]      # compute x_{t+1|t}.
         
-        #The optimization criterion
+        # The optimization criterion:
         if (outofsample) {
           if (i <= (nstates-13) ){      # nstates-13 is the number of non-stationary state variables.
             logl <- logl - nrow(y)/2*log(2*pi)
