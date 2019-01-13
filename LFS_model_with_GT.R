@@ -14,7 +14,9 @@
 
 # The lines that are not commented here, are commented on KalmanFilter/LFS_model.R.  
 
-  KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates,lambda,H,ns.id){
+
+
+KF_slopes_mixed_factor <- function(par,y,opti,k,delta,outofsample,parP10,nstates,lambda,H,ns.id){
     len <- length(y[1,])
     sigma_Ry <- par[1]
     sigma_omegay <- par[2]
