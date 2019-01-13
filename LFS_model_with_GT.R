@@ -43,8 +43,6 @@
       C[,,l] <- matrix(c(cos((pi*l)/6),  sin((pi*l)/6), -sin((pi*l)/6), cos((pi*l)/6)),2,2,byrow=TRUE)
     }
     Tyomega <- adiag(C[,,1],C[,,2],C[,,3],C[,,4],C[,,5],-1)
-    ncol(Tyomega)
-    nrow(Tyomega)
     Tylambda <- diag(4)
     TyE <- rbind(matrix(0,9,5), cbind(diag(4), c(0,0,0,0)))
     delta <- delta
@@ -72,8 +70,6 @@
       Zx <- cbind(as.matrix(lambda,length(lambda),1),diag(one.ns.id))
       Zx <- Zx[,which(!apply(Zx,2,FUN = function(x){all(x == 0)}))]
       Z <- cbind(adiag(Zy,as.matrix(Zx)))
-      ncol(Z)
-      nrow(Z)
       
       epshatoutofsample <- y[,i] - Z%*%xttm1[,i]
       diag.H <- diag(H)
