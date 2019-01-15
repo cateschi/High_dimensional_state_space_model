@@ -1,4 +1,5 @@
 # This R-script is party based on "An Introduction to State Space Models" by Marc Wildi.
+
 # The function "KF_slopes_univ" performs the estimation of the LFS model, without auxuliary series. It requires the following arguments:
 # par: initial values for the model's parameters (8x1 vector).
 # y: 5xT matrix of the unemployed labour force (T=167).
@@ -8,6 +9,9 @@
 # outofsample: if TRUE, computes the loglikelihood based on the out-of-sample forecast errors.
 # parP10: large number for the diffuse initialization.
 # nstates: number of state variables in the model.
+
+# Packages required to run the scripts:
+library(magic)
 
 
 
