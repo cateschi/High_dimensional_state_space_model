@@ -1,4 +1,5 @@
 # This R-script is party based on "An Introduction to State Space Models" by Marc Wildi.
+
 # The function "KF_slopes_mixed_factor_CC" performs the estimation of the LFS model, with the auxiliary series of claimant counts and Google Trends. It requires the following arguments:
 # par: initial values for the model's parameters (13x1 vector).
 # y: (6+n)xT matrix of the unemployed labour force, the claiamnt counts and the n Google trends (the first 5 series are the unemployed labour force and the 6th one is the claimant counts) (T=167).
@@ -13,7 +14,11 @@
 # ns.id: vector of length equal to the number of nonstationary idiosyncratic components. It should contain the ordered numbers corresponing to the nonstationary idiosyncratic components. 
 
 # The lines that are not commented here, are commented on KalmanFilter/LFS_model.R, KalmanFilter/LFS_model_with_CC.R and KalmanFilter/LFS_model_with_GT.R  
-  
+
+
+# Packages required to run the scripts:
+library(magic)
+
   
   
 KF_slopes_mixed_factor_CC <- function(par,y,opti,k,delta,outofsample,parP10,nstates,lambda,H,ns.id){
