@@ -1,4 +1,5 @@
 # This R-script is party based on "An Introduction to State Space Models" by Marc Wildi.
+
 # The function "KF_slopes_mixed_factor" performs the estimation of the LFS model, with the multivariate auxiliary series of Google Trends. It requires the following arguments:
 # par: initial values for the model's parameters (9x1 vector).
 # y: (5+n)xT matrix of the unemployed labour force and the n Google trends (the first 5 series are the unemployed labour force) (T=167).
@@ -14,6 +15,9 @@
 # psis: vector with the estimated coefficients from the OLS regression of the estimated LFS trend's slope's first difference on the lags of the differenced Google Trends' factor.
 
 # The lines that are not commented here, are commented on KalmanFilter/LFS_model.R and KalmanFilter/LFS_model_with_GT.R. 
+
+# Packages required to run the scripts:
+library(magic)
 
 
 
