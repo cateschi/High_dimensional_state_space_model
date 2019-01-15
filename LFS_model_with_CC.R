@@ -1,4 +1,5 @@
 # This R-script is party based on "An Introduction to State Space Models" by Marc Wildi.
+
 # The function "KF_slopes" performs the estimation of the LFS model, with the univariate auxiliary series of claimant counts. It requires the following arguments:
 # par: initial values for the model's parameters (12x1 vector).
 # y: 6xT matrix of the unemployed labour force and the claimant counts (the 6th series is the one of the claimant counts) (T=167).
@@ -10,6 +11,10 @@
 # nstates: number of state variables in the model.
 
 # The lines that are not commented here, are commented on KalmanFilter/LFS_model.R.
+
+
+# Packages required to run the scripts:
+library(magic)
 
 
 
