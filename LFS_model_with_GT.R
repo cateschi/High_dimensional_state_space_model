@@ -13,7 +13,7 @@
 # H: the nxn estimated covariance matrix, by PCA, of the idiosyncratic components of the Google Trends.
 # ns.id: vector of length equal to the number of nonstationary idiosyncratic components. It should contain the ordered numbers corresponing to the nonstationary idiosyncratic components.
 
-# The lines that are not commented here, are commented on KalmanFilter/LFS_model.R.  
+# The lines that are not commented here, are commented on /LFS_model.R.  
 
 # Packages required to run the scripts:
 library(magic)
