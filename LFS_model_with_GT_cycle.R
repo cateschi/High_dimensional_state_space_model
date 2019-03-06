@@ -14,7 +14,7 @@
 # ns.id: vector of length equal to the number of nonstationary idiosyncratic components. It should contain the ordered numbers corresponing to the nonstationary idiosyncratic components.
 # sARIMA: vector with the estimated coefficients of an ARIMA(3,1,1) model for the Google Trends' factor.
 
-# The lines that are not commented here, are commented on KalmanFilter/LFS_model.R and KalmanFilter/LFS_model_with_GT.R.
+# The lines that are not commented here, are commented on /LFS_model.R and /LFS_model_with_GT.R.
 
 # Packages required to run the scripts:
 library(magic)
