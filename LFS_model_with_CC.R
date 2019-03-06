@@ -10,7 +10,7 @@
 # parP10: large number for the diffuse initialization.
 # nstates: number of state variables in the model.
 
-# The lines that are not commented here, are commented on KalmanFilter/LFS_model.R.
+# The lines that are not commented here, are commented on /LFS_model.R.
 
 
 # Packages required to run the scripts:
