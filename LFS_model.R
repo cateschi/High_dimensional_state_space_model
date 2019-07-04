@@ -1,6 +1,6 @@
 # This R-script is party based on "An Introduction to State Space Models" by Marc Wildi.
 
-# The function "KF_slopes_univ" performs the estimation of the LFS model, without auxuliary series. It requires the following arguments:
+# The function "KF_slopes_univ" performs the estimation of the LFS model, without auxiliary series. It requires the following arguments:
 # par: initial values for the model's parameters (8x1 vector).
 # y: 5xT matrix of the unemployed labour force (T=167).
 # opti: if TRUE, optimizes the function.
@@ -94,7 +94,7 @@ KF_slopes_univ <- function(par,y,opti,k,delta,outofsample,parP10,nstates){
         } else {
           if (i <= (nstates-13) ){
             logl <- logl - nrow(y)/2*log(2*pi)
-          } else if (i > (nstates-13) ){       # diffuse log likelihood.
+          } else if (i > (nstates-13) ){       # diffuse loglikelihood.
             logl <- logl - nrow(y)/2*log(2*pi) - 1/2*log(det(Fmatrix)) - 1/2*t(epshatinsample)%*%svdFmatrix$v%*%diag(1/svdFmatrix$d)%*%t(svdFmatrix$u)%*%epshatinsample
             if ((NaN %in% logl)==T){
               logl<- -P10[1]
