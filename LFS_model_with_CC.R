@@ -151,7 +151,7 @@ init.val.CC <- c(log(2000),log(0.02),log(900),log(1.07),log(0.99*(1-0.21^2)),
                  log(3000),log(0.02),0,log(1000), 0.21)      # initial values for the hyperparameters.
 
 objopt.CC <-  ucminf(par=init.val.CC,LFS_CC,y,k,opti=T,outofsample=T,parP10=1000000000000,nstates=43,hessian=2,
-                        control=list(grad="central", gradstep = c(1e-2, 1e-3)))
+                     control=list(grad="central", gradstep = c(1e-2, 1e-3)))
                 
 par.CC <- objopt.CC$par
                 
