@@ -5,7 +5,6 @@
 # y: 6xT matrix of the unemployed labour force and the claimant counts (the 6th series is the one of the claimant counts) (T=185).
 # opti: if TRUE, optimizes the function.
 # k: Tx5 matrix of the standard errors of the GREG estimates.
-# delta: autocorrelation coefficient of the survey errors.
 # outofsample: if TRUE, computes the loglikelihood based on the out-of-sample forecast errors.
 # parP10: large number for the diffuse initialization.
 # nstates: number of state variables in the model.
