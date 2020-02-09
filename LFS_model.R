@@ -130,10 +130,10 @@ LFS_univ <- function(par,y,opti,k,outofsample,parP10,nstates){
                 
 objopt <- ucminf(par=c(log(2000),log(0.02),log(900),log(1.07),log(0.99*(1-0.21^2)),
                      log(1.01*(1-0.21^2)),log(1.13*(1-0.21^2)),log(1.06*(1-0.21^2)), 0.21),
-                     LFS_univ,y=y,k=k,opti=T,outofsample=T,parP10=1000000000000,nstates=30,  hessian=2, 
+                     LFS_univ,y,k,opti=T,outofsample=T,parP10=1000000000000,nstates=30,hessian=2, 
                      control=list(grad="central", gradstep = c(1e-2, 1e-3)))      # optimize the function.
                 
 par <- objopt$par      # estimated hperparameters.
                 
-obj <- LFS_univ(par=objopt$par,y=y,k=k,opti=F,outofsample=T,parP10=1000000000000,nstates=30)      # Kalman filter estimation.
+obj <- LFS_univ(par=objopt$par,y,k,opti=F,outofsample=T,parP10=1000000000000,nstates=30)      # Kalman filter estimation.
                 
