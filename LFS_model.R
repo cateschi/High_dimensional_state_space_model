@@ -37,7 +37,7 @@ LFS_univ <- function(par,y,opti,k,outofsample,parP10,nstates){
   D <- adiag(0, exp(sigma_Ry), exp(sigma_omegay)*diag(11), exp(sigma_lambda)*diag(4), sd_nu, diag(0,8,8))
   Q <- D%*%R%*%D      # states innovations' covariance matrix.  
   
-  #Bulid T (the tranistion matrix):
+  # Bulid T (the tranistion matrix):
   Tymu <- matrix(c(1,1,0,1),2,2, byrow=T)      # transition matrix of the trend's level and slope.
   C <- array(0,dim=c(2,2,5))
   for (l in 1:5){
@@ -51,13 +51,13 @@ LFS_univ <- function(par,y,opti,k,outofsample,parP10,nstates){
   Ty <- adiag(Tymu, Tyomega, Tylambda, TyE)
   Tmatrix <- Ty
   
-  #initialization of loglikelihood:
+  # initialization of loglikelihood:
   logl <- 0
   
-  #Start of KF recursions:
+  # Start of KF recursions:
   for (i in 1:len){
     
-    #Bulid Z:
+    # Bulid Z:
     Zy <- c(1,0)
     Zy <- rep(Zy,6)
     Zy <- c(Zy,1)
@@ -101,7 +101,7 @@ LFS_univ <- function(par,y,opti,k,outofsample,parP10,nstates){
         
     }
     
-    #The optimization criterion
+    # The optimization criterion
     if (outofsample) {
       if (i <= (30-13) ){      # 30-13 is the number of state variables for which a diffuse initialization is employed.
         logl <- logl - nrow(y)/2*log(2*pi)
