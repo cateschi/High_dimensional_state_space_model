@@ -48,7 +48,7 @@ LFS_GT <- function(par,y,opti,k,outofsample,parP10,nfactors,nstates,lambda,H,ns.
   }
   Q <- D%*%R%*%D
   
-  # Build T (the transition matrix)::
+  # Build T (the transition matrix):
   Tymu <- matrix(c(1,1,0,1),2,2, byrow=T)
   C <- array(0,dim=c(2,2,5))
   for (l in 1:5){
@@ -65,10 +65,10 @@ LFS_GT <- function(par,y,opti,k,outofsample,parP10,nfactors,nstates,lambda,H,ns.
   Tx <- diag(1,ncol=(length(ns.id)+nfactors), nrow=(length(ns.id)+nfactors))      # transition matrix of the Google Trends' factors and the nonstationary idiosyncratic components.
   Tmatrix <- adiag(Ty, Tx)
   
-  # initialization of log-likelihood
+  # initialization of log-likelihood:
   logl <- 0
   
-  # Start of KF recursions
+  # Start of KF recursions:
   for (i in 1:len){
     
     # Bulild Z:
@@ -106,7 +106,6 @@ LFS_GT <- function(par,y,opti,k,outofsample,parP10,nfactors,nstates,lambda,H,ns.
       diag.H <- diag(H)
       diag.H[ns.id] <- 0       # only variances of stationary idiosyncratic components.
       Fmatrix <- Z%*%Pttm1[[i]]%*%t(Z) + W%*%adiag(diag(0,ncol(waves),ncol(waves)),diag(diag.H,nrow(y)-ncol(waves),nrow(y)-ncol(waves)))%*%t(W)
-      #Fmatrix[1,1] <- ifelse(!is.na(epshatoutofsample[1,]), Fmatrix[1,1], parP10[1])
       if (is.scalar(Fmatrix) == TRUE){
         Fmatrix.inv = 1/Fmatrix
       } else {
