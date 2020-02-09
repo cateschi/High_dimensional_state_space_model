@@ -5,7 +5,6 @@
 # y: (5+n)xT matrix of the unemployed labour force and the n Google trends (the first 5 series are the unemployed labour force) (T=185).
 # opti: if TRUE, optimizes the function.
 # k: Tx5 matrix of the standard errors of the GREG estimates.
-# delta: autocorrelation coefficient of the survey errors.
 # outofsample: if TRUE, computes the loglikelihood based on the out-of-sample forecast errors.
 # parP10: large number for the diffuse initialization.
 # nfactors: number of Google Trends' factors (r).
