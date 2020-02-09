@@ -93,15 +93,12 @@ LFS_CC <- function(par,y,k,opti,outofsample,parP10,nstates){
       y[which(is.na(y[,i])),i] <- 0
     }
     
-    if (length(which(is.na(y[,i]))) > 0 && length(which(is.na(y[,i]))) == length(y[,i])){   
-        
+    if (length(which(is.na(y[,i]))) > 0 && length(which(is.na(y[,i]))) == length(y[,i])){           
       xtt[,i] <- xttm1[,i]
       Ptt[[i]] <- Pttm1[[i]]
       Pttm1[[i+1]] <- Tmatrix%*%Pttm1[[i]]%*%t(Tmatrix) + Q
-      xttm1[,i+1] <- Tmatrix%*%xttm1[,i]
-        
-    } else {
-        
+      xttm1[,i+1] <- Tmatrix%*%xttm1[,i]        
+    } else {        
       epshatoutofsample <- W%*%y[,i] - Z%*%xttm1[,i]
       Fmatrix <- Z%*%Pttm1[[i]]%*%t(Z) + W%*%H%*%t(W)
       if (is.scalar(Fmatrix) == TRUE){
@@ -154,10 +151,10 @@ init.val.CC <- c(log(2000),log(0.02),log(900),log(1.07),log(0.99*(1-0.21^2)),
                  log(1.01*(1-0.21^2)),log(1.13*(1-0.21^2)),log(1.06*(1-0.21^2)),
                  log(3000),log(0.02),0,log(1000), 0.21)      # initial values for the hyperparameters.
 
-objopt.CC <-  ucminf(par=init.val.CC,LFS_CC,y=y,k=k,opti=T,outofsample=T,parP10=1000000000000,nstates=43,hessian=2,
+objopt.CC <-  ucminf(par=init.val.CC,LFS_CC,y,k,opti=T,outofsample=T,parP10=1000000000000,nstates=43,hessian=2,
                         control=list(grad="central", gradstep = c(1e-2, 1e-3)))
                 
 par.CC <- objopt.CC$par
                 
-obj <- LFS_CC(par=objopt.CC$par,y=y,k=k,opti=F,outofsample=T,parP10=1000000000000,nstates=43)
+obj <- LFS_CC(par=objopt.CC$par,y,k,opti=F,outofsample=T,parP10=1000000000000,nstates=43)
 
