@@ -68,14 +68,14 @@ LFS_univ <- function(par,y,opti,k,outofsample,parP10,nstates){
     ncol(Z)
     nrow(Z)
     
-    W <- diag(1,length(y[,i]))     # matrix to treat missing observations
-    if (length(which(is.na(y[,i]))) > 0 && length(which(is.na(y[,i]))) < length(y[,i])){      # some, but not all, variables have have missing observations in i
+    W <- diag(1,length(y[,i]))     # matrix to treat missing observations.
+    if (length(which(is.na(y[,i]))) > 0 && length(which(is.na(y[,i]))) < length(y[,i])){      # some, but not all, variables have have missing observations in i.
       W <- matrix(W[-which(is.na(y[,i])),], nrow=(length(y[,i])-length(which(is.na(y[,i])))), ncol=ncol(W))
       Z <- W%*%Z
       y[which(is.na(y[,i])),i] <- 0
     }
     
-    if (length(which(is.na(y[,i]))) > 0 && length(which(is.na(y[,i]))) == length(y[,i])){     # all series have missing observations in i
+    if (length(which(is.na(y[,i]))) > 0 && length(which(is.na(y[,i]))) == length(y[,i])){     # all series have missing observations in i.
       
       xtt[,i] <- xttm1[,i]
       Ptt[[i]] <- Pttm1[[i]]
