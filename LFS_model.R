@@ -11,6 +11,10 @@
 
 # Packages required to run the scripts:
 library(magic)
+library(ucminf)
+
+
+is.scalar <- function(x) is.atomic(x) && length(x) == 1L
 
 
 LFS_univ <- function(par,y,opti,k,outofsample,parP10,nstates){
@@ -134,5 +138,5 @@ objopt <- ucminf(par=c(log(2000),log(0.02),log(900),log(1.07),log(0.99*(1-0.21^2
                 
 par <- objopt$par      # estimated hperparameters.
                 
-obj <- KF_slopes_univ(par=objopt$par,y=y,k=k,opti=F,outofsample=T,parP10=1000000000000,nstates=30)      # Kalman filter estimation.
+obj <- LFS_univ(par=objopt$par,y=y,k=k,opti=F,outofsample=T,parP10=1000000000000,nstates=30)      # Kalman filter estimation.
                 
