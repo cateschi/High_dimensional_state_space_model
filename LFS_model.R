@@ -75,15 +75,12 @@ LFS_univ <- function(par,y,opti,k,outofsample,parP10,nstates){
       y[which(is.na(y[,i])),i] <- 0
     }
     
-    if (length(which(is.na(y[,i]))) > 0 && length(which(is.na(y[,i]))) == length(y[,i])){     # all series have missing observations in i.
-      
+    if (length(which(is.na(y[,i]))) > 0 && length(which(is.na(y[,i]))) == length(y[,i])){     # all series have missing observations in i.     
       xtt[,i] <- xttm1[,i]
       Ptt[[i]] <- Pttm1[[i]]
       Pttm1[[i+1]] <- Tmatrix%*%Pttm1[[i]]%*%t(Tmatrix) + Q
-      xttm1[,i+1] <- Tmatrix%*%xttm1[,i]
-        
-    } else {
-        
+      xttm1[,i+1] <- Tmatrix%*%xttm1[,i]      
+    } else {     
       epshatoutofsample <- W%*%y[,i] - Z%*%xttm1[,i]      # out-of-sample forecas errors.
       Fmatrix <- Z%*%Pttm1[[i]]%*%t(Z)
       if (is.scalar(Fmatrix) == TRUE){
