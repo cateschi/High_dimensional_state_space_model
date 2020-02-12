@@ -5,7 +5,7 @@
 # y: (5+n)xT matrix of the unemployed labour force and the n Google trends (the first 5 series are the unemployed labour force) (T=184).
 # opti: if TRUE, optimizes the function.
 # k: Tx5 matrix of the standard errors of the GREG estimates.
-# outofsample: if TRUE, computes the loglikelihood based on the out-of-sample forecast errors.
+# outofsample: if TRUE, computes the log-likelihood based on the out-of-sample forecast errors.
 # parP10: large number for the diffuse initialization.
 # nfactors: number of Google Trends' factors (r).
 # nstates: number of state variables in the model.
@@ -82,7 +82,7 @@ LFS_GT <- function(par,y,opti,k,outofsample,parP10,nfactors,nstates,lambda,H,ns.
     }
     Zy <- cbind(Zy, diag(as.numeric(k[i,]), nrow=5, ncol=5), matrix(0, nrow=5, ncol=8))
     one.ns.id <- rep(0, nrow(H))
-    one.ns.id[ns.id] <- 1       # one if element of vector corresponds to nonstationary idiosyncratic component
+    one.ns.id[ns.id] <- 1       # one if element of vector corresponds to nonstationary idiosyncratic components.
     Zx <- cbind(as.matrix(lambda),diag(one.ns.id))
     Zx <- Zx[,which(!apply(Zx,2,FUN = function(x){all(x == 0)}))]
     Z <- cbind(adiag(Zy,as.matrix(Zx)))
