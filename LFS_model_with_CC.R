@@ -36,7 +36,7 @@ LFS_CC <- function(par,y,k,opti,outofsample,parP10,nstates){
   P10 <- diag(c(rep(parP10[1],17),c(1,rep((1-delta^2),4),1,rep((1-delta^2),3),1,rep((1-delta^2),3)),rep(parP10[1],nstates-30)),nstates,nstates)     
   Pttm1[[1]] <- P10
   xtt <- matrix(0,nstates,(len))
-  st.for <- matrix(0,nrow(y),len)      # matrix to store the standardized the one-step-ahead forecast errors.
+  st.for <- matrix(0,nrow(y),len)      # matrix to store the standardized one-step-ahead forecast errors.
   xttm1 <- matrix(0,nstates,(len+1))
   xttm1[,1] <- x10
   R <- diag(1,nstates,nstates)
