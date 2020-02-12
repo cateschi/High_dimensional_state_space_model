@@ -2,7 +2,7 @@
 
 # The function "LFS_GT" performs the estimation of the LFS model, with the multivariate auxiliary series of Google Trends. It requires the following arguments:
 # par: initial values for the model's parameters ((9+r)x1 vector)g; r is the number of Google Trends' factors.
-# y: (5+n)xT matrix of the unemployed labour force and the n Google trends (the first 5 series are the unemployed labour force) (T=185).
+# y: (5+n)xT matrix of the unemployed labour force and the n Google trends (the first 5 series are the unemployed labour force) (T=184).
 # opti: if TRUE, optimizes the function.
 # k: Tx5 matrix of the standard errors of the GREG estimates.
 # outofsample: if TRUE, computes the loglikelihood based on the out-of-sample forecast errors.
