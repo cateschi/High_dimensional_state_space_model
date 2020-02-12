@@ -57,7 +57,6 @@ LFS_CC <- function(par,y,k,opti,outofsample,parP10,nstates){
   nrow(Tyomega)
   Tylambda <- diag(4)
   TyE <- rbind(matrix(0,9,5), cbind(diag(4), c(0,0,0,0)))
-  delta <- delta
   TyE <- cbind(TyE, rbind(c(0,0,0,0),diag(delta,nrow=4,ncol=4),matrix(0,8,4)))
   TyE <- cbind(TyE, rbind(matrix(0,5,4),diag(4),matrix(0,4,4)))
   Ty <- adiag(Tymu, Tyomega, Tylambda, TyE)
