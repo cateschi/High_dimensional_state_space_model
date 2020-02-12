@@ -2,7 +2,7 @@
 
 # The function "LFS_CC_GT" performs the estimation of the LFS model, with the auxiliary series of claimant counts and Google Trends. It requires the following arguments:
 # par: initial values for the model's parameters ((12+r)x1 vector); r is the number of Google Trends' factors.
-# y: (6+n)xT matrix of the unemployed labour force, the claiamnt counts and the n Google trends (the first 5 series are the unemployed labour force and the 6th one is the claimant counts) (T=185).
+# y: (6+n)xT matrix of the unemployed labour force, the claiamnt counts and the n Google trends (the first 5 series are the unemployed labour force and the 6th one is the claimant counts) (T=184).
 # opti: if TRUE, optimizes the function.
 # k: Tx5 matrix of the standard errors of the GREG estimates.
 # outofsample: if TRUE, computes the loglikelihood based on the out-of-sample forecast errors.
