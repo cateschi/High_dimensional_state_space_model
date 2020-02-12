@@ -51,7 +51,7 @@ LFS_univ <- function(par,y,opti,k,outofsample,parP10,nstates){
   Ty <- adiag(Tymu, Tyomega, Tylambda, TyE)
   Tmatrix <- Ty
   
-  # initialization of loglikelihood:
+  # initialization of log-likelihood:
   logl <- 0
   
   # Start of KF recursions:
@@ -104,7 +104,7 @@ LFS_univ <- function(par,y,opti,k,outofsample,parP10,nstates){
         logl <- logl - nrow(y)/2*log(2*pi)
       } else if (i > (30-13) ){      # diffuse log-likelihood.
         logl <- logl - nrow(y)/2*log(2*pi) - 1/2*log(det(Fmatrix)) - 1/2*t(epshatoutofsample)%*%Fmatrix.inv%*%epshatoutofsample
-        if ((NaN %in% logl)==T){       # push the loglikelihood away from the current parameters if there are NaN values in the loglikelihood.
+        if ((NaN %in% logl)==T){       # push the log-likelihood away from the current parameters if there are NaN values in the log-likelihood.
           logl<- -P10[1]
         }
       }
