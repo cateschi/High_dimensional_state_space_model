@@ -5,7 +5,7 @@
 # y: (6+n)xT matrix of the unemployed labour force, the claiamnt counts and the n Google trends (the first 5 series are the unemployed labour force and the 6th one is the claimant counts) (T=184).
 # opti: if TRUE, optimizes the function.
 # k: Tx5 matrix of the standard errors of the GREG estimates.
-# outofsample: if TRUE, computes the loglikelihood based on the out-of-sample forecast errors.
+# outofsample: if TRUE, computes the log-likelihood based on the out-of-sample forecast errors.
 # parP10: large number for the diffuse initialization.
 # nfactors: number of Google Trends' factors (r).
 # nstates: number of state variables in the model.
