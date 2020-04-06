@@ -168,13 +168,14 @@ LFS_CC_GT <- function(par,y,opti,k,outofsample,parP10,nfactors,nstates,lambda,H,
 } 
 
 
-init.val.GT <- c(log(2000),log(0.02),log(900),log(1.07),log(0.99*(1-0.21^2)),
-                 log(1.01*(1-0.21^2)),log(1.13*(1-0.21^2)),log(1.06*(1-0.21^2)), 0.21, rep(0,nfactors))
+init.val.CC.GT <- c(log(2000),log(0.02),log(900),log(1.07),log(0.99*(1-0.21^2)),
+                    log(1.01*(1-0.21^2)),log(1.13*(1-0.21^2)),log(1.06*(1-0.21^2)),log(3000),
+                    log(0.02),0.21,log(1000),0,rep(0,nfactors))
 
-objopt.GT <- ucminf(par=init.val.GT, LFS_CC_GT,y,opti=T,k,outofsample=T,parP10=1000000000000,nfactors,
+objopt.CC.GT <- ucminf(par=init.val.CC.GT, LFS_CC_GT,y,opti=T,k,outofsample=T,parP10=1000000000000,nfactors,
                     nstates,lambda,H,ns.id,hessian=2,control=list(grad="central", gradstep = c(1e-2, 1e-3), trace=T))
 
-par.GT <- objopt.GT$par
+par.GT <- objopt.CC.GT$par
 
-obj <- LFS_CC_GT(par=objopt.GT$par,y,opti=F,k,outofsample=T,parP10=1000000000000,nfactors,nstates,lambda,H,ns.id)
+obj <- LFS_CC_GT(par=objopt.CC.GT$par,y,opti=F,k,outofsample=T,parP10=1000000000000,nfactors,nstates,lambda,H,ns.id)
                 
