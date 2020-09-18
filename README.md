@@ -10,4 +10,4 @@ This repository contains the R codes and dataset for the estimation of the high-
 
 The file _GoogleTrends_CC.xlsx_ contains the data for the claimant counts and the Google Trends that are used in the analysis.
 
-In case of queries you can contact the corresponding author at c.schiavoni@maastrichtuniversity.nl.
+In case of queries you can contact the corresponding author at c[dot]schiavoni[at]maastrichtuniversity[dot]nl.
