@@ -7,5 +7,3 @@ This repository contains the R codes and dataset for the estimation of the high-
 + The script _LFS_model_with_CC_and_GT.R_ contains the function that estimates the Labour Force Model augmented with both auxiliary series of claimant counts and Google Trends.
 + The script _LFS_model_with_GT_cycle.R_ contains the function that estimates the Labour Force Model augmented with the auxiliary series of Google Trends, while modeling the cycle/seasonality of the Google Trends' factors.
 + The script _LFS_model_with_GT_lags.R_ contains the function that estimates the Labour Force Model augmented with the auxiliary series of Google Trends, while including the lags of the Google Trends' factors in the model.
-
-The file _GoogleTrends_CC.xlsx_ contains the data for the claimant counts and the Google Trends that are used in the analysis.
